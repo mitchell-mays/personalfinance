@@ -3,7 +3,8 @@ A ReactJS Web application hosted on AWS using Cloudfront/S3/Lambda
 
 ##Contents
 
-###Budgeting
+###Budget
 ###Tax
 ###Investments
 ###Savings
+###Loans

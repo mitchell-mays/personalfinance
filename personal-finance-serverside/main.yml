@@ -1,0 +1,112 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+
+Parameters:
+  NameOfBucket:
+    Type: String
+
+Outputs:
+  Host:
+    Value: !GetAtt Distribution.DomainName
+
+Resources:
+  Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref NameOfBucket
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      PolicyDocument:
+        Id: MyPolicy
+        Statement:
+          - Sid: PublicRead
+            Effect: Allow
+            Principal: '*'
+            Action: 
+              - 's3:GetObject'
+              - 's3:GetObjectVersion'
+            Resource: !Join 
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref Bucket
+                - /*
+      Bucket: !Ref Bucket
+
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Origins:
+        - Id: !Ref Bucket
+          DomainName: !GetAtt Bucket.DomainName
+          S3OriginConfig: {}
+        DefaultRootObject : "index.html"
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - 'GET'
+            - 'HEAD'
+            - 'OPTIONS'
+          CachedMethods:
+            - 'GET'
+            - 'HEAD'
+          TargetOriginId: !Ref Bucket
+          ForwardedValues:
+            QueryString: false
+          ViewerProtocolPolicy: redirect-to-https
+        CacheBehaviors:
+          - PathPattern: '/*.*'
+            AllowedMethods:
+              - 'GET'
+              - 'HEAD'
+              - 'OPTIONS'
+            CachedMethods:
+              - 'GET'
+              - 'HEAD'
+            TargetOriginId: !Ref Bucket
+            ForwardedValues:
+              QueryString: false
+            ViewerProtocolPolicy: redirect-to-https
+
+          - PathPattern: '/*'
+            AllowedMethods:
+              - 'GET'
+              - 'HEAD'
+              - 'OPTIONS'
+            TargetOriginId: !Ref Bucket
+            ForwardedValues:
+              QueryString: true
+            ViewerProtocolPolicy: redirect-to-https
+            LambdaFunctionAssociations:
+            - EventType: origin-request
+              LambdaFunctionARN: !Ref IndexLambda.Version
+
+  IndexLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: !GetAtt IndexLambdaRole.Arn
+      Runtime: "nodejs12.x"
+      Handler: index.handler
+      CodeUri: src/services/rewrite/
+      AutoPublishAlias: live
+          
+  IndexLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+            - edgelambda.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole

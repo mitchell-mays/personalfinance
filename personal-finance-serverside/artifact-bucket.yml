@@ -1,0 +1,12 @@
+Description: >
+    Creates the deployment bucket for the full-stack application
+Parameters:
+    DeployBucket:
+        Type: String
+
+Resources:
+    DeploymentArtifactsBucket:
+        Type: AWS::S3::Bucket
+        Properties:
+            BucketName: !Ref DeployBucket
+            AccessControl: Private

@@ -1,0 +1,15 @@
+{
+    "name": "personal-finance-serverside",
+    "version": "0.1.0",
+    "private": true,
+    "dependencies": {
+        "aws-sdk": "^2.824.0"
+    },
+    "scripts": {
+        "deploy-artifacts-bucket": "aws cloudformation deploy --stack-name artifacts-bucket --region us-east-1 --template ./artifact-bucket.yml --parameter-overrides DeployBucket=mitchellmays-artifacts-bucket --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset",
+        "package": "sam package --template-file ./main.yml --s3-bucket mitchellmays-artifacts-bucket --s3-prefix develop/develop --output-template-file main.compiled.yml",
+        "deploy-main": "sam deploy --template-file main.compiled.yml --stack-name edge-sam-lambda --region us-east-1 --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND --parameter-overrides NameOfBucket=mitchellmays-apps-finance-sam --no-fail-on-empty-changeset",
+        "validate": "sam validate --template main.yml",
+        "deploy": "npm run deploy-artifacts-bucket && npm run package && npm run deploy-main"
+    }
+}
