@@ -10,6 +10,7 @@
     "react": "^17.0.1",
     "react-bootstrap": "^1.4.0",
     "react-dom": "^17.0.1",
+    "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.1",
     "web-vitals": "^0.2.4"
   },
@@ -18,7 +19,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "build-and-deploy": "npm run build && aws --profile personalfinance s3 sync build/ s3://mitchellmays-apps-personalfinance"
+    "build-and-deploy": "npm run build && aws s3 sync build/ s3://mitchellmays-apps-finance-sam"
   },
   "eslintConfig": {
     "extends": [
@@ -37,5 +38,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "serverless-s3-sync": "^1.15.0"
   }
 }
