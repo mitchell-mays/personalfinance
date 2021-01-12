@@ -1,7 +1,7 @@
 'use strict'; exports.handler = async (event) => {
 
-    // Extract the request from the CloudFront event that is sent to
-    Lambda@Edge const request = event.Records[0].cf.request;
+    // Extract the request from the CloudFront event that is sent to Lambda@Edge 
+    const request = event.Records[0].cf.request;
 
     // Extract the URI from the request const olduri = request.uri;
 
