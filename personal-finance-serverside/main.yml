@@ -48,6 +48,10 @@ Resources:
           DomainName: !GetAtt Bucket.DomainName
           S3OriginConfig: {}
         DefaultRootObject : "index.html"
+        CustomErrorResponses:
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: "/index.html"
         DefaultCacheBehavior:
           AllowedMethods:
             - 'GET'
@@ -60,6 +64,7 @@ Resources:
           ForwardedValues:
             QueryString: false
           ViewerProtocolPolicy: redirect-to-https
+          MaxTTL: 0
         CacheBehaviors:
           - PathPattern: '/*.*'
             AllowedMethods:
@@ -74,39 +79,7 @@ Resources:
               QueryString: false
             ViewerProtocolPolicy: redirect-to-https
 
-          - PathPattern: '/*'
-            AllowedMethods:
-              - 'GET'
-              - 'HEAD'
-              - 'OPTIONS'
-            TargetOriginId: !Ref Bucket
-            ForwardedValues:
-              QueryString: true
-            ViewerProtocolPolicy: redirect-to-https
-            LambdaFunctionAssociations:
-            - EventType: origin-request
-              LambdaFunctionARN: !Ref IndexLambda.Version
-
-  IndexLambda:
-    Type: AWS::Serverless::Function
+  Services:
+    Type: AWS::CloudFormation::Stack
     Properties:
-      Role: !GetAtt IndexLambdaRole.Arn
-      Runtime: "nodejs12.x"
-      Handler: index.handler
-      CodeUri: src/services/rewrite/
-      AutoPublishAlias: live
-          
-  IndexLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-        - Effect: Allow
-          Principal:
-            Service:
-            - lambda.amazonaws.com
-            - edgelambda.amazonaws.com
-          Action: sts:AssumeRole
-      ManagedPolicyArns:
-      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      TemplateURL: src/services/services.yml
