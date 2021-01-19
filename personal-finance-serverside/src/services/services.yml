@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+
+Globals:
+  Api:
+    Cors:
+      AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+      AllowMethods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
+      AllowOrigin: "'*'"
+
+Resources:
+  budgetTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: budget
+      PrimaryKey:
+        Name: id
+        Type: String
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  BasicAWSApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: Basic AWS Api Gateway
+      StageName: Staging
+
+        
+  LambdaWrite:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: budget/budgetPost/
+      Handler: index.handler
+      Runtime: nodejs12.x
+      Events:
+        apiForLambda:
+          Type: Api 
+          Properties:
+            RestApiId: !Ref BasicAWSApiGateway
+            Path: /budgets
+            Method: post
+      Policies:
+        DynamoDBWritePolicy:
+          TableName: !Ref budgetTable
+            
+  LambdaRead:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: budget/budgetGet/
+      Handler: index.handler
+      Runtime: nodejs12.x
+      Events:
+        apiForLambda:
+          Type: Api 
+          Properties:
+            RestApiId: !Ref BasicAWSApiGateway
+            Path: /budget/{id}
+            Method: get
+
+      Policies:
+        DynamoDBReadPolicy:
+          TableName: !Ref budgetTable
