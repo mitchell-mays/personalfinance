@@ -62,18 +62,21 @@ export default class Budget extends Component {
     }
 
     showContent(){
-      const api = process.env.REACT_APP_API_URL + 'budget/' + this.state.id;
-      console.log("getting value");
-      axios
-        .get(api)
-        .then((response) => {
-          const getResponse = JSON.parse(response.request.response);
-          this.setState({ name: getResponse.message.Item.name });
-        })
-        .catch((error) => {
-          console.log(error);
-      });
-
+      if (this.state.name == ''){
+        const api = process.env.REACT_APP_API_URL + 'budget/' + this.state.id;
+        console.log("getting value");
+        axios
+          .get(api)
+          .then((response) => {
+            const getResponse = JSON.parse(response.request.response);
+            const name = getResponse.message.Item.name.S;
+            this.setState({ name: name });
+          })
+          .catch((error) => {
+            console.log(error);
+        });
+      }
+      
       return(
       <Card>
       <Card.Header>{this.state.name}</Card.Header>

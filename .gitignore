@@ -105,3 +105,6 @@ dist
 
 # Compiled Yamls
 *.compiled.yml
+
+# Compiled SAM Builds
+*.aws-sam
